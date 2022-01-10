@@ -1,0 +1,6 @@
+name: EpicPacketLib
+version: '${version}'
+main: ir.pmzhero.epicpacketlib.EpicPacketLib
+api-version: 1.15
+authors: [ PmzHero ]
+description: Epic Packet lib
