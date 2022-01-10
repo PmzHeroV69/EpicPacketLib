@@ -1,8 +1,6 @@
 package ir.pmzhero.epicpacketlib;
 
-import ir.pmzhero.epicpacketlib.events.PlayInChatEvent;
 import ir.pmzhero.epicpacketlib.network.PacketReader;
-import ir.pmzhero.epicpacketlib.network.packets.server.PlayOutPlayerInfo;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
