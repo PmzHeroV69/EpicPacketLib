@@ -29,8 +29,4 @@ public final class EpicPacketLib extends JavaPlugin implements Listener {
         new PacketReader(e.getPlayer()).inject();
     }
 
-    @EventHandler
-    public void onChat(PlayInChatEvent e) {
-        new PlayOutPlayerInfo(PlayOutPlayerInfo.InfoType.REMOVE_PLAYER, e.getPlayer()).sendToAllPlayers();
-    }
 }
