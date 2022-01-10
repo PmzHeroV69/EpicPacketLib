@@ -2,14 +2,13 @@ package ir.pmzhero.epicpacketlib.network;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import ir.pmzhero.epicpacketlib.events.*;
+import io.netty.channel.ChannelPromise;
+import ir.pmzhero.epicpacketlib.events.PacketEvent;
+import ir.pmzhero.epicpacketlib.network.packets.client.*;
 import net.minecraft.server.v1_8_R3.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 
 import java.lang.reflect.Field;
 
@@ -25,78 +24,57 @@ public class PacketReader {
 
         ((CraftPlayer) player).getHandle().playerConnection.networkManager.channel.pipeline().addBefore("packet_handler", "epic", new ChannelDuplexHandler() {
 
+            PacketEvent event;
+
             @Override
             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
                 if (msg instanceof PacketPlayInUseEntity) {
 
-                    call(new PlayInUseEntityEvent(player, PlayInUseEntityEvent.ActionType.valueOf(getValue(msg, "action").toString()),
-                            (int) getValue(msg, "a")));
+                    event = new PlayInUseEntity(msg, player).getEvent();
 
                 } else if (msg instanceof PacketPlayInChat) {
 
-                    call(new PlayInChatEvent(player, (String) getValue(msg, "a")));
+                    event = new PlayInChat(msg, player).getEvent();
 
                 } else if (msg instanceof PacketPlayInBlockDig) {
 
-                    BlockPosition position = (BlockPosition) getValue(msg, "a");
-                    call(new PlayInBlockDigEvent(player, PlayInBlockDigEvent.DigType.valueOf(getValue(msg, "c").toString()),
-                            new Location(
-                                    player.getWorld(),
-                                    position.getX(),
-                                    position.getY(),
-                                    position.getZ()
-                            )
-                            ));
+                    event = new PlayInBlockDig(msg, player).getEvent();
 
                 } else if (msg instanceof PacketPlayInTabComplete) {
 
-                    call(new PlayInTabCompleteEvent(player, (String) getValue(msg, "a")));
+                    event = new PlayInTabComplete(msg, player).getEvent();
 
                 } else if (msg instanceof PacketPlayInFlying) {
 
-                    PacketPlayInFlying p = (PacketPlayInFlying) msg;
-                    call(new PlayInFlyingEvent(player, new Location(
-                            player.getWorld(),
-                            p.a(),
-                            p.b(),
-                            p.c(),
-                            p.d(),
-                            p.e()
-                    ), p instanceof PacketPlayInFlying.PacketPlayInPosition ? PlayInFlyingEvent.MoveType.POSITION
-                            : p instanceof PacketPlayInFlying.PacketPlayInPositionLook ? PlayInFlyingEvent.MoveType.POSITION_LOOK
-                            : p instanceof PacketPlayInFlying.PacketPlayInLook ? PlayInFlyingEvent.MoveType.LOOK : PlayInFlyingEvent.MoveType.UNKNOWN));
+                    event = new PlayInFlying(msg, player).getEvent();
 
                 } else if (msg instanceof PacketPlayInBlockPlace) {
 
-                    BlockPosition position = (BlockPosition) getValue(msg, "b");
-                    call(new PlayInBlockPlaceEvent(player, new Location(
-                            player.getWorld(),
-                            position.getX(),
-                            position.getY(),
-                            position.getZ()
-
-                    ), CraftItemStack.asBukkitCopy(((PacketPlayInBlockPlace) msg).getItemStack())));
+                    event = new PlayInBlockPlace(msg, player).getEvent();
 
                 } else if (msg instanceof PacketPlayInAbilities) {
-                    call(new PlayInAbilitiesEvent(
-                            player,
-                            (boolean) getValue(msg, "a"),
-                            (boolean) getValue(msg, "b"),
-                            (boolean) getValue(msg, "c"),
-                            (boolean) getValue(msg, "d"),
-                            (float) getValue(msg, "e"),
-                            (float) getValue(msg, "f")
-                    ));
+
+                    event = new PlayInAbilities(msg, player).getEvent();
+
                 }
 
+                if (event != null)
+                    Bukkit.getPluginManager().callEvent(event);
                 super.channelRead(ctx, msg);
             }
 
+            @Override
+            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise channelPromise) throws Exception {
+                if (event != null && event.isCancelled()) {
+                    System.out.println("cancelled " + event.isCancelled());
+                    return;
+                }
+                super.write(ctx, msg, channelPromise);
+            }
         });
     }
 
-    private Object getValue(Object instance, String name) {
+    public static Object getValue(Object instance, String name) {
         Object result = null;
         try {
             Field field = instance.getClass().getDeclaredField(name);
@@ -106,10 +84,6 @@ public class PacketReader {
             e.printStackTrace();
         }
         return result;
-    }
-
-    public void call(Event event) {
-        Bukkit.getPluginManager().callEvent(event);
     }
 
 }

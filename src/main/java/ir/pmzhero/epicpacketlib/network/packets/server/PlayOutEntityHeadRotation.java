@@ -1,26 +1,33 @@
-package ir.pmzhero.epicpacketlib.network.packets;
+package ir.pmzhero.epicpacketlib.network.packets.server;
 
-import ir.pmzhero.epicpacketlib.network.Packet;
-import net.minecraft.server.v1_8_R3.PacketPlayOutSpawnEntityLiving;
+import net.minecraft.server.v1_8_R3.PacketPlayOutEntityHeadRotation;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public class PlayOutSpawnEntityLiving implements Packet {
+public class PlayOutEntityHeadRotation implements ServerPacket {
 
-    private final PacketPlayOutSpawnEntityLiving packet;
-    private final LivingEntity entity;
+    private final PacketPlayOutEntityHeadRotation packet;
+    private final Entity entity;
+    private final byte rotation;
 
-    public PlayOutSpawnEntityLiving(LivingEntity entity) {
+    public PlayOutEntityHeadRotation(Entity entity, byte rotation) {
         this.entity = entity;
-        packet = new PacketPlayOutSpawnEntityLiving(((CraftLivingEntity) entity).getHandle());
+        this.rotation = rotation;
+        this.packet = new PacketPlayOutEntityHeadRotation(((CraftEntity) entity).getHandle(), rotation);
+    }
+
+    public PlayOutEntityHeadRotation(Entity entity, float yaw) {
+        this.entity = entity;
+        this.rotation = (byte) ((yaw * 256.0F) / 360.0F);
+        this.packet = new PacketPlayOutEntityHeadRotation(((CraftEntity) entity).getHandle(), rotation);
     }
 
     public void send(Player player) {
@@ -64,14 +71,19 @@ public class PlayOutSpawnEntityLiving implements Packet {
         }
     }
 
-    public LivingEntity getEntity() {
+    public Entity getEntity() {
         return entity;
     }
 
+    public byte getRotation() {
+        return rotation;
+    }
+
+    @Override
     public String toString() {
-        return "PlayOutSpawnEntityLiving{" +
-                "packet=" + packet +
-                ", entity=" + entity +
+        return "PlayOutEntityHeadRotation{" +
+                "entity=" + entity +
+                ", rotation=" + rotation +
                 '}';
     }
 }

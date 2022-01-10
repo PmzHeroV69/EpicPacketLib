@@ -3,9 +3,8 @@ package ir.pmzhero.epicpacketlib.events;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 
-public class PlayInBlockDigEvent extends PlayerEvent {
+public class PlayInBlockDigEvent extends PacketEvent {
 
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 

@@ -2,9 +2,8 @@ package ir.pmzhero.epicpacketlib.events;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 
-public class PlayInUseEntityEvent extends PlayerEvent {
+public class PlayInUseEntityEvent extends PacketEvent {
 
     private static final HandlerList HANDLERS_LIST = new HandlerList();
 
